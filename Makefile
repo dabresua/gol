@@ -1,280 +1,104 @@
-#############################################################################
 #
-# Generic Makefile for C/C++ Program
+# 'make'        build executable file 'main'
+# 'make clean'  removes all .o and executable files
 #
-# License: GPL (General Public License)
-# Author:  whyglinux <whyglinux AT gmail DOT com>
-# Date:    2006/03/04 (version 0.1)
-#          2007/03/24 (version 0.2)
-#          2007/04/09 (version 0.3)
-#          2007/06/26 (version 0.4)
-#          2008/04/05 (version 0.5)
-#
-# Description:
-# ------------
-# This is an easily customizable makefile template. The purpose is to
-# provide an instant building environment for C/C++ programs.
-#
-# It searches all the C/C++ source files in the specified directories,
-# makes dependencies, compiles and links to form an executable.
-#
-# Besides its default ability to build C/C++ programs which use only
-# standard C/C++ libraries, you can customize the Makefile to build
-# those using other libraries. Once done, without any changes you can
-# then build programs using the same or less libraries, even if source
-# files are renamed, added or removed. Therefore, it is particularly
-# convenient to use it to build codes for experimental or study use.
-#
-# GNU make is expected to use the Makefile. Other versions of makes
-# may or may not work.
-#
-# Usage:
-# ------
-# 1. Copy the Makefile to your program directory.
-# 2. Customize in the "Customizable Section" only if necessary:
-#    * to use non-standard C/C++ libraries, set pre-processor or compiler
-#      options to <MY_CFLAGS> and linker ones to <MY_LIBS>
-#      (See Makefile.gtk+-2.0 for an example)
-#    * to search sources in more directories, set to <SRCDIRS>
-#    * to specify your favorite program name, set to <PROGRAM>
-# 3. Type make to start building your program.
-#
-# Make Target:
-# ------------
-# The Makefile provides the following targets to make:
-#   $ make           compile and link
-#   $ make NODEP=yes compile and link without generating dependencies
-#   $ make objs      compile only (no linking)
-#   $ make ctags     create ctags for VI editor
-#   $ make clean     clean objects, the executable and dependencies
-#   $ make help      get the usage of the makefile
-#
-#===========================================================================
 
-## Customizable Section: adapt those variables to suit your program.
-##==========================================================================
+# define the Cpp compiler to use
+CXX = g++
 
-# The pre-processor and compiler options.
-MY_CFLAGS = -I$(SRCROOT) -I$(LIBDIR)
+# define any compile-time flags
+CXXFLAGS	:= -std=c++17 -Wall -Wextra -g
 
-# The linker options.
-MY_LIBS   = -lSDL2 -lSDL2_image -lSDL2_ttf
+# define library paths in addition to /usr/lib
+#   if I wanted to include libraries not in /usr/lib I'd specify
+#   their path using -Lpath, something like:
+LFLAGS = -lSDL2
 
-# The pre-processor options used by the cpp (man cpp for more).
-CPPFLAGS  = -Wall
-CFLAGS  = -g
-CXXFLAGS= -g
+# define output directory
+OUTPUT	:= output
 
-# The root of the project.
-SRCROOT   = source
-SRCDIR    = source
-LIBDIR    = include
-RECURSION = 1
+# define source directory
+SRC		:= src
+TEST    := test
 
-# The executable file name.
-# If not specified, current directory name or `demo.out' will be used.
-PROGRAM   = gol_main
+# define include directory
+INCLUDE	:= include
 
-## Implicit Section: change the following only when necessary.
-##==========================================================================
+# define lib directory
+LIB		:= lib
 
-# The source file types (headers excluded).
-# .c indicates C source files, and others C++ ones.
-SRCEXTS = .c .C .cc .cpp .CPP .c++ .cxx .cp
-
-# The header file types.
-HDREXTS = .h .H .hh .hpp .HPP .h++ .hxx .hp
-
-# The C++ program compiler.
-CXX    = g++
-
-# The C program compiler.
-CC     = gcc
-
-# The command used to delete file.
-RM     = rm -f
-
-CTAGS = ctags
-CTAGSFLAGS =
-
-# The directories in which source files reside.
-SRCROOT := $(foreach d,$(SRCROOT),$(d:/=))
-SRCDIRS := $(strip $(SRCROOT) $(SRCDIR))
-SRCDIRS := $(foreach d,$(SRCDIRS),$(d:/=))
-ifeq ($(RECURSION), 1)
-SRCDIRS := $(shell find $(SRCDIRS) -type d | grep \\.git -v)
-endif
-SRCDIRS := $(sort $(SRCDIRS))
-RMOBJS  := $(addsuffix /*.o, $(SRCDIRS))
-RMDEPS  := $(RMOBJS:.o=.d)
-
-# The options used in linking as well as in any direct use of ld.
-LDFLAGS   =
-
-## Stable Section: usually no need to be changed. But you can add more.
-##==========================================================================
-SHELL   = /bin/bash
-EMPTY   =
-SPACE   = $(EMPTY) $(EMPTY)
-ifeq ($(PROGRAM),)
-  CUR_PATH_NAMES = $(subst /,$(SPACE),$(subst $(SPACE),_,$(CURDIR)))
-  PROGRAM = $(word $(words $(CUR_PATH_NAMES)),$(CUR_PATH_NAMES))
-  ifeq ($(PROGRAM),)
-    PROGRAM = demo.out
-  endif
-endif
-ifeq ($(SRCDIRS),)
-  SRCDIRS = .
-endif
-SOURCES = $(foreach d,$(SRCDIRS),$(wildcard $(addprefix $(d)/*,$(SRCEXTS))))
-HEADERS = $(foreach d,$(SRCDIRS),$(wildcard $(addprefix $(d)/*,$(HDREXTS))))
-SRC_CXX = $(filter-out %.c,$(SOURCES))
-OBJS    = $(addsuffix .o, $(basename $(SOURCES)))
-DEPS    = $(OBJS:.o=.d)
-
-## Define some useful variables.
-DEP_OPT = $(shell if `$(CC) --version | grep "gcc" >/dev/null`; then \
-                  echo "-MM -MP"; else echo "-M"; fi )
-DEPEND      = $(CC)  $(DEP_OPT)  $(MY_CFLAGS) $(CFLAGS) $(CPPFLAGS)
-DEPEND.d    = $(subst -g ,,$(DEPEND))
-COMPILE.c   = $(CC)  $(MY_CFLAGS) $(CFLAGS)   $(CPPFLAGS) -c
-COMPILE.cxx = $(CXX) $(MY_CFLAGS) $(CXXFLAGS) $(CPPFLAGS) -c
-LINK.c      = $(CC)  $(MY_CFLAGS) $(CFLAGS)   $(CPPFLAGS) $(LDFLAGS)
-LINK.cxx    = $(CXX) $(MY_CFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS)
-
-.PHONY: all objs tags ctags clean help show
-
-# Delete the default suffixes
-.SUFFIXES:
-
-all: $(PROGRAM)
-
-# Rules for creating dependency files (.d).
-#------------------------------------------
-
-%.d:%.c
-	@echo -n $(dir $<) > $@
-	$(DEPEND.d) $< >> $@
-
-%.d:%.C
-	@echo -n $(dir $<) > $@
-	$(DEPEND.d) $< >> $@
-
-%.d:%.cc
-	@echo -n $(dir $<) > $@
-	$(DEPEND.d) $< >> $@
-
-%.d:%.cpp
-	@echo -n $(dir $<) > $@
-	$(DEPEND.d) $< >> $@
-
-%.d:%.CPP
-	@echo -n $(dir $<) > $@
-	$(DEPEND.d) $< >> $@
-
-%.d:%.c++
-	@echo -n $(dir $<) > $@
-	$(DEPEND.d) $< >> $@
-
-%.d:%.cp
-	@echo -n $(dir $<) > $@
-	$(DEPEND.d) $< >> $@
-
-%.d:%.cxx
-	@echo -n $(dir $<) > $@
-	$(DEPEND.d) $< >> $@
-
-# Rules for generating object files (.o).
-#----------------------------------------
-objs:$(OBJS)
-
-%.o:%.c
-	$(COMPILE.c) $< -o $@
-
-%.o:%.C
-	$(COMPILE.cxx) $< -o $@
-
-%.o:%.cc
-	$(COMPILE.cxx) $< -o $@
-
-%.o:%.cpp
-	$(COMPILE.cxx) $< -o $@
-
-%.o:%.CPP
-	$(COMPILE.cxx) $< -o $@
-
-%.o:%.c++
-	$(COMPILE.cxx) $< -o $@
-
-%.o:%.cp
-	$(COMPILE.cxx) $< -o $@
-
-%.o:%.cxx
-	$(COMPILE.cxx) $< -o $@
-
-# Rules for generating the tags.
-#-------------------------------------
-tags: $(HEADERS) $(SOURCES)
-	$(ETAGS) $(ETAGSFLAGS) $(HEADERS) $(SOURCES)
-
-ctags: $(HEADERS) $(SOURCES)
-	$(CTAGS) $(CTAGSFLAGS) $(HEADERS) $(SOURCES)
-
-# Rules for generating the executable.
-#-------------------------------------
-COBJS = $(filter-out $(foreach d,$(PROGRAM), \
-  $(addprefix $(SRCROOT)/,$(d).o)), $(OBJS))
-$(PROGRAM):$(OBJS)
-ifeq ($(SRC_CXX),)              # C program
-	$(LINK.c)   $(COBJS) $(SRCROOT)/$@.o $(MY_LIBS) -o $@
-	@echo Type $(SRCROOT)/$@ to execute the program.
-else                            # C++ program
-	$(LINK.cxx) $(COBJS) $(SRCROOT)/$@.o $(MY_LIBS) -o $@
-	@echo Type $(SRCROOT)/$@ to execute the program.
+ifeq ($(OS),Windows_NT)
+MAIN	:= game_of_life.exe
+TEST	:= test.exe
+SOURCEDIRS	:= $(SRC)
+SOURCETEST	:= $(TEST)
+INCLUDEDIRS	:= $(INCLUDE)
+LIBDIRS		:= $(LIB)
+FIXPATH = $(subst /,\,$1)
+RM			:= del /q /f
+MD	:= mkdir
+else
+MAIN	:= game_of_life
+TEST	:= test
+SOURCEDIRS	:= $(shell find $(SRC) -type d)
+SOURCETEST	:= $(shell find $(TEST) -type d)
+INCLUDEDIRS	:= $(shell find $(INCLUDE) -type d)
+LIBDIRS		:= $(shell find $(LIB) -type d)
+FIXPATH = $1
+RM = rm -f
+MD	:= mkdir -p
 endif
 
-ifndef NODEP
-ifneq ($(DEPS),)
-  sinclude $(DEPS)
-endif
-endif
+# define any directories containing header files other than /usr/include
+INCLUDES	:= $(patsubst %,-I%, $(INCLUDEDIRS:%/=%))
 
+# define the C libs
+LIBS		:= $(patsubst %,-L%, $(LIBDIRS:%/=%))
+
+# define the C source files
+SOURCES		:= $(wildcard $(patsubst %,%/*.cpp, $(SOURCEDIRS)))
+SOURCESTEST := $(wildcard $(patsubst %,%/*.cpp, $(SOURCETEST)))
+
+# define the C object files 
+OBJECTS		:= $(SOURCES:.cpp=.o)
+OBJECTSTEST	:= $(SOURCESTEST:.cpp=.o) src/gol.o src/graphics.o
+
+#
+# The following part of the makefile is generic; it can be used to 
+# build any executable just by changing the definitions above and by
+# deleting dependencies appended to the file from 'make depend'
+#
+
+OUTPUTMAIN	:= $(call FIXPATH,$(OUTPUT)/$(MAIN))
+OUTPUTTEST	:= $(call FIXPATH,$(OUTPUT)/$(TEST))
+
+all: $(OUTPUT) $(MAIN) $(TEST)
+	@echo Executing 'all' complete!
+
+$(OUTPUT):
+	$(MD) $(OUTPUT)
+
+$(MAIN): $(OBJECTS) 
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+
+$(TEST): $(OBJECTSTEST) 
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(OUTPUTTEST) $(OBJECTSTEST) $(LFLAGS) $(LIBS)
+
+# this is a suffix replacement rule for building .o's from .c's
+# it uses automatic variables $<: the name of the prerequisite of
+# the rule(a .c file) and $@: the name of the target of the rule (a .o file) 
+# (see the gnu make manual section about automatic variables)
+.cpp.o:
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $<  -o $@
+
+.PHONY: clean
 clean:
-	$(RM) $(RMDEPS) $(RMOBJS)
-	$(RM) $(PROGRAM) $(foreach d,$(PROGRAM),$(addprefix $(d),.exe))
+	$(RM) $(OUTPUTMAIN)
+	$(RM) $(OUTPUTTEST)
+	$(RM) $(call FIXPATH,$(OBJECTS))
+	$(RM) $(call FIXPATH,$(OBJECTSTEST))
+	@echo Cleanup complete!
 
-# Show help.
-help:
-	@echo 'Generic Makefile for C/C++ Programs (gcmakefile) version 0.5'
-	@echo 'Copyright (C) 2007, 2008 whyglinux <whyglinux@hotmail.com>'
-	@echo
-	@echo 'Usage: make [TARGET]'
-	@echo 'TARGETS:'
-	@echo '  all       (=make) compile and link.'
-	@echo '  NODEP=yes make without generating dependencies.'
-	@echo '  objs      compile only (no linking).'
-	@echo '  ctags     create ctags for VI editor.'
-	@echo '  clean 	   clean objects, the executable and dependencies.'
-	@echo '  show      show variables (for debug use only).'
-	@echo '  help      print this message.'
-	@echo
-	@echo 'Report bugs to <whyglinux AT gmail DOT com>.'
-
-# Show variables (for debug use only.)
-show:
-	@echo 'PROGRAM     :' $(PROGRAM)
-	@echo 'SRCDIRS     :' $(SRCDIRS)
-	@echo 'HEADERS     :' $(HEADERS)
-	@echo 'SOURCES     :' $(SOURCES)
-	@echo 'SRC_CXX     :' $(SRC_CXX)
-	@echo 'OBJS        :' $(OBJS)
-	@echo 'DEPS        :' $(DEPS)
-	@echo 'DEPEND      :' $(DEPEND)
-	@echo 'COMPILE.c   :' $(COMPILE.c)
-	@echo 'COMPILE.cxx :' $(COMPILE.cxx)
-	@echo 'LINK.c      :' $(LINK.c)
-	@echo 'LINK.cxx    :' $(LINK.cxx)
-
-## End of the Makefile ##  Suggestions are welcome  ## All rights reserved ##
-#############################################################################
-
+run: all
+	./$(OUTPUTMAIN)
+	@echo Executing 'run: all' complete!
