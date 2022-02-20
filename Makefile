@@ -94,7 +94,7 @@ $(TEST): $(OBJECTSTEST)
 # the rule(a .c file) and $@: the name of the target of the rule (a .o file) 
 # (see the gnu make manual section about automatic variables)
 .cpp.o:
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LFLAGS) $(LIBS) -c $<  -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $<  -o $@  $(LFLAGS) $(LIBS)
 
 .PHONY: clean
 clean:
