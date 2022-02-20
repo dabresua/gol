@@ -12,7 +12,12 @@ CXXFLAGS	:= -std=c++17 -Wall -Wextra -g
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS = -lSDL2
+LFLAGS = -lSDL2main -lSDL2
+
+# Add this flags for SDL2 library if necesary
+#-lSDL2_image
+#-lSDL2_ttf
+#-lSDL2_mixer
 
 # define output directory
 OUTPUT	:= output
