@@ -18,6 +18,25 @@ namespace gol {
 	typedef bool** world_t;
 
 	/**
+	 * @brief Defines the set of rules for the gol world
+	 */
+	typedef struct rules_t {
+		int d2l_min;        /**< dead to live min */
+		int d2l_max;        /**< dead to live max */
+		int l2d_min;        /**< live to dead min */
+		int l2d_max;        /**< live to dead max */
+
+		/**
+		 * @brief Ostream operator to print the rules
+		 *
+		 * @param r rules handler
+		 * @param os Ostream handler
+		 * @return ostream&
+		 */
+		friend std::ostream & operator<<(std::ostream &, const rules_t &);
+	} rules_t;
+
+	/**
 	 * @brief Defines the Game Of Life world
 	 *        GOL world is populated by cells that could be alive or dead
 	 * 
@@ -111,6 +130,22 @@ namespace gol {
 		 */
 		void tick();
 
+		/**
+		 * @brief Gets the set of rules
+		 *
+		 * @return tuple with the rules set
+		 */
+		const rules_t& get_rules() const
+		{
+			return rules;
+		}
+
+		/**
+		 * @brief asks user for new set of rules
+		 *
+		 */
+		void input_rules();
+
 	private:
 		world_t world1;     /**< Cells world */
 		world_t world2;     /**< Cells world */
@@ -118,6 +153,7 @@ namespace gol {
 		cell_t outside;     /**< The status of the cells outside the margins */
 		int height;         /**< World size */
 		int width;          /**< World size */
+		rules_t rules;      /**< The set of rules */
 
 		/**
 		 * @brief Get the current world object
@@ -164,6 +200,15 @@ namespace gol {
 	 * @return ostream& 
 	 */
 	std::ostream & operator<<(std::ostream &, const Gol &);
+
+	/**
+	 * @brief Ostream operator to print the rules
+	 *
+	 * @param r rules handler
+	 * @param os Ostream handler
+	 * @return ostream&
+	 */
+	std::ostream & operator<<(std::ostream &, const rules_t &);
 }
 
 #endif /* GOL_H_INCLUDED */

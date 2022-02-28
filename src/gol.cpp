@@ -13,6 +13,12 @@ Gol::Gol(int width, int height, bool alive)
 	this->height = height;
 	std::cout << "Constructor" << std::endl;
 
+	/* Classic set of rules */
+	rules.d2l_min = 2;
+	rules.d2l_max = 3;
+	rules.l2d_min = 3;
+	rules.l2d_max = 3;
+
 	world1 = new cell_t*[width];
 	world2 = new cell_t*[width];
 	for (int i = 0; i < width; i++)
@@ -76,6 +82,13 @@ std::ostream & gol::operator<<(std::ostream &os, const Gol &g)
 		}
 		os << std::endl;				
 	}
+	return os;
+}
+
+std::ostream & gol::operator<<(std::ostream &os, const rules_t &r)
+{
+	os << "Dead to live [" << r.d2l_min << ", " << r.d2l_max << "], ";
+	os << "Live to dead [" << r.l2d_min << ", " << r.l2d_max << "]";
 	return os;
 }
 
@@ -239,8 +252,15 @@ cell_t Gol::evaluate(cell_t status, int neighbors)
 {
 	// Classic rules. TODO: make them configurable
 	if (status) {
-		return neighbors >= 2 && neighbors <= 3;
+		return neighbors >= rules.d2l_min && neighbors <= rules.d2l_max;
 	} else {
-		return neighbors == 3;
+		return neighbors >= rules.l2d_min && neighbors <= rules.l2d_max;
 	}
+}
+
+void Gol::input_rules()
+{
+	std::cout << "Input the new set of rules" << std::endl;
+	std::cout << "Actual: " << rules << std::endl;
+	std::cin >> rules.d2l_min >> rules.d2l_max >> rules.l2d_min >> rules.l2d_max;
 }

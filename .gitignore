@@ -1,3 +1,5 @@
 gol_main
 *.d
 *.o
+output/test
+output/game_of_life

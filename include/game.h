@@ -20,6 +20,7 @@ class Game {
 private:
 	bool quit:1;
 	bool pause:1;
+	bool verbose:1;
 public:
 	/**
 	 * @brief Construct a new Game object
@@ -28,6 +29,7 @@ public:
 	Game() {
 		quit = false;
 		pause = false;
+		verbose = false;
 	}
 
 	/**
