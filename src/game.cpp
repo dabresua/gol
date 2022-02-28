@@ -28,7 +28,7 @@ void Game::process_events(gol::Gol &g, const SDL_Event &e)
 			break;
 		case SDLK_r:
 			pause = true;
-			g.fill_random(30);
+			g.fill_random(alive);
 			if (verbose)
 				std::cout << "World reseted" << std::endl;
 			break;
@@ -45,6 +45,10 @@ void Game::process_events(gol::Gol &g, const SDL_Event &e)
 		case SDLK_x:
 			g.input_rules();
 			break;
+		case SDLK_c:
+			std::cout << "Fill world with a percentage of alive cells" << std::endl;
+			std::cin >> alive;
+			g.fill_random(alive);
 		default:
 			break;
 		}

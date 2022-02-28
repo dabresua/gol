@@ -5,12 +5,14 @@ using namespace gol;
 
 Gol::Gol(int width, int height, bool alive)
 {
+	std::lock_guard<std::mutex> lock(m);
 	outside = false;
 	current_world = true;
 	world1 = NULL;
 	world2 = NULL;
 	this->width = width;
 	this->height = height;
+	processing = false;
 	std::cout << "Constructor" << std::endl;
 
 	/* Classic set of rules */
@@ -46,6 +48,8 @@ Gol::~Gol()
 
 void Gol::fill_random(int alive)
 {
+	std::unique_lock<std::mutex> lock(m);
+	dv.wait(lock, [this]{return !processing;});
 	world_t &w = current_world ? world1 : world2;
 	for (int y = 0; y < height; y++)
 	{
@@ -58,17 +62,17 @@ void Gol::fill_random(int alive)
 
 bool Gol::get_cell(int x, int y) const
 {
-	if (x < 0 || x >= get_width() || 
-	    y < 0 || y >= get_height())
+	if (x < 0 || x >= width ||
+	    y < 0 || y >= height)
 		return outside;
 	return get_current_world()[x][y];
 }
 
 void Gol::set_cell(int x, int y, bool status)
 {
-	if (x >= 0 && x < get_width() && 
-	    y >= 0 && y < get_height())
-		current_world ? world1[x][y] = status : 
+	if (x >= 0 && x < width &&
+	    y >= 0 && y < height)
+		current_world ? world1[x][y] = status :
 		                world2[x][y] = status;
 }
 
@@ -104,6 +108,8 @@ void Gol::tick()
 
 void Gol::update(const world_t &from, world_t &to)
 {
+	std::lock_guard<std::mutex> lock(m);
+	processing = true;
 	int x = 0, y = 0;
 	int neighbors = 0;
 
@@ -246,6 +252,9 @@ void Gol::update(const world_t &from, world_t &to)
 	if (from[x-1][y])
 		neighbors++;
 	to[x][y] = evaluate(from[x][y], neighbors);
+
+	processing = false;
+	dv.notify_one();
 }
 
 cell_t Gol::evaluate(cell_t status, int neighbors)
@@ -262,5 +271,10 @@ void Gol::input_rules()
 {
 	std::cout << "Input the new set of rules" << std::endl;
 	std::cout << "Actual: " << rules << std::endl;
-	std::cin >> rules.d2l_min >> rules.d2l_max >> rules.l2d_min >> rules.l2d_max;
+	int a, b, c, d;
+	std::cin >> a >> b >> c >> d;
+	rules.d2l_min = a;
+	rules.d2l_max = b;
+	rules.l2d_min = c;
+	rules.l2d_max = d;
 }

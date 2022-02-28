@@ -9,6 +9,8 @@
 
 #include <vector>
 #include <ostream>
+#include <mutex>
+#include <condition_variable>
 
 namespace gol {
 	/** Defines a cell type */
@@ -58,6 +60,9 @@ namespace gol {
 		 * 
 		 */
 		~Gol();
+
+		/** Deletes copy operator for thread-safe */
+		Gol & operator=(const Gol &) = delete;
 
 		/**
 		 * @brief Fills the world with random cells
@@ -147,13 +152,16 @@ namespace gol {
 		void input_rules();
 
 	private:
-		world_t world1;     /**< Cells world */
-		world_t world2;     /**< Cells world */
-		bool current_world; /**< Indicates current world */
-		cell_t outside;     /**< The status of the cells outside the margins */
-		int height;         /**< World size */
-		int width;          /**< World size */
-		rules_t rules;      /**< The set of rules */
+		world_t world1;             /**< Cells world */
+		world_t world2;             /**< Cells world */
+		bool current_world;         /**< Indicates current world */
+		cell_t outside;             /**< The status of the cells outside the margins */
+		int height;                 /**< World size */
+		int width;                  /**< World size */
+		rules_t rules;              /**< The set of rules */
+		mutable std::mutex m;       /**< Protects the worlds from race conditions */
+		std::condition_variable dv; /**< Notifies threads that are waitting */
+		bool processing:1;          /**< Indicates a tick is performing */
 
 		/**
 		 * @brief Get the current world object

@@ -18,9 +18,10 @@ namespace game {
  */
 class Game {
 private:
-	bool quit:1;
-	bool pause:1;
-	bool verbose:1;
+	bool quit:1;    /**< Quit the game */
+	bool pause:1;   /**< Pause the game */
+	bool verbose:1; /**< Show command line messages */
+	int alive;      /**< Percentage of alive cells at reset */
 public:
 	/**
 	 * @brief Construct a new Game object
@@ -30,6 +31,7 @@ public:
 		quit = false;
 		pause = false;
 		verbose = false;
+		alive = 30;
 	}
 
 	/**
