@@ -12,6 +12,9 @@
 
 namespace graphics {
 
+#define MAX_ZOOM (8)
+#define MIN_ZOOM (1)
+
 class Graphics {
 public:
 	/**
@@ -36,30 +39,47 @@ public:
 	void paint(const gol::Gol &g);
 
 	/**
-	 * @brief Set the x object
+	 * @brief increases x coordinate
 	 * 
-	 * @param x coordinate
 	 */
-	inline void set_x(int x)
-	{
-		this->x = x;
-	}
+	inline void inc_x() {x++;}
 
 	/**
-	 * @brief Set the y object
+	 * @brief decreases x coordinate
 	 * 
-	 * @param y coordinate
 	 */
-	inline void set_y(int y)
-	{
-		this->y = y;
-	}
+	inline void dec_x() {x--;}
+
+	/**
+	 * @brief increases y coordinate
+	 * 
+	 */
+	inline void inc_y() {y++;}
+
+	/**
+	 * @brief decreases y coordinate
+	 * 
+	 */
+	inline void dec_y() {y--;}
+
+	/**
+	 * @brief increases the zoom of the screen
+	 * 
+	 */
+	void zoom_in();
+
+	/**
+	 * @brief decreases the zoom of the screen
+	 * 
+	 */
+	void zoom_out();
 
 private:
 	SDL_Window* window; /**< Window handler */
 	SDL_Renderer* rend; /**< Renderer handler */
 	int x;              /**< Origin coordinate */
 	int y;              /**< Origin coordinate */
+	int pixel;          /**< Cell size in pixels */
 	int width;          /**< Size of screen */
 	int height;         /**< Size of screen */
 };

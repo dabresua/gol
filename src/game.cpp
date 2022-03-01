@@ -3,7 +3,7 @@
 
 using namespace game;
 
-void Game::process_events(gol::Gol &g, const SDL_Event &e)
+void Game::process_events(gol::Gol &g, graphics::Graphics &gp, const SDL_Event &e)
 {
 	switch (e.type)
 	{
@@ -49,6 +49,25 @@ void Game::process_events(gol::Gol &g, const SDL_Event &e)
 			std::cout << "Fill world with a percentage of alive cells" << std::endl;
 			std::cin >> alive;
 			g.fill_random(alive);
+			break;
+		case SDLK_PLUS:
+			gp.zoom_in();
+			break;
+		case SDLK_MINUS:
+			gp.zoom_out();
+			break;
+		case SDLK_RIGHT:
+			gp.inc_x();
+			break;
+		case SDLK_LEFT:
+			gp.dec_x();
+			break;
+		case SDLK_UP:
+			gp.dec_y();
+			break;
+		case SDLK_DOWN:
+			gp.inc_y();
+			break;
 		default:
 			break;
 		}

@@ -37,7 +37,7 @@ int main(void)
 			std::this_thread::sleep_for(std::chrono::milliseconds(sleep_ms));
 
 		while(SDL_PollEvent(&e) != 0 )
-			game.process_events(g, e);
+			game.process_events(g, gp, e);
 	} while(!game.is_finished());
 
 	return 0;

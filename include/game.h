@@ -8,6 +8,7 @@
  */
 
 #include <gol.h>
+#include <graphics.h>
 #include <SDL2/SDL_events.h>
 
 namespace game {
@@ -40,7 +41,7 @@ public:
 	 * @param g Gol handler
 	 * @param e Event handler
 	 */
-	void process_events(gol::Gol &g, const SDL_Event &e);
+	void process_events(gol::Gol &g, graphics::Graphics &gp, const SDL_Event &e);
 
 	/**
 	 * @brief Gets if the game is paused
